@@ -1,6 +1,5 @@
 # Wechat SDK for Skynology Cloud Code
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.md)
-
 [![Build Status](https://travis-ci.org/skynology/wechat.svg)](https://travis-ci.org/skynology/wechat)
 
 
