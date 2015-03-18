@@ -6,9 +6,64 @@
 package corp
 
 import (
+	"encoding/base64"
+	"encoding/xml"
+	"errors"
 	"strconv"
 	"strings"
+
+	"github.com/skynology/wechat/util"
 )
+
+type RequestParam struct {
+	AppId     string
+	Random    []byte
+	Timestamp int64
+	Token     string
+	AESKey    [32]byte
+	Nonce     string
+}
+
+// 回复消息的 http body
+type ResponseHttpBody struct {
+	XMLName      struct{} `xml:"xml" json:"-"`
+	EncryptedMsg string   `xml:"Encrypt"`
+	MsgSignature string   `xml:"MsgSignature"`
+	TimeStamp    int64    `xml:"TimeStamp"`
+	Nonce        string   `xml:"Nonce"`
+}
+
+func GetResponse(r *RequestParam, msg interface{}) (result ResponseHttpBody, err error) {
+	if r == nil {
+		err = errors.New("nil Request Parmas")
+		return
+	}
+	if msg == nil {
+		err = errors.New("nil message")
+		return
+	}
+
+	MsgRawXML, err := xml.Marshal(msg)
+	if err != nil {
+		return
+	}
+
+	EncryptedMsg := util.AESEncryptMsg(r.Random, MsgRawXML, r.AppId, r.AESKey)
+	base64EncryptedMsg := base64.StdEncoding.EncodeToString(EncryptedMsg)
+
+	responseHttpBody := ResponseHttpBody{
+		EncryptedMsg: base64EncryptedMsg,
+		TimeStamp:    r.Timestamp,
+		Nonce:        r.Nonce,
+	}
+
+	TimestampStr := strconv.FormatInt(responseHttpBody.TimeStamp, 10)
+	responseHttpBody.MsgSignature = util.MsgSign(r.Token, TimestampStr,
+		responseHttpBody.Nonce, responseHttpBody.EncryptedMsg)
+
+	result = responseHttpBody
+	return
+}
 
 // 用 '|' 连接 a 的各个元素
 func JoinString(a []string) string {

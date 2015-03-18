@@ -146,7 +146,7 @@ func (clt *Client) SendText(msg *Text) (r *Result, err error) {
 		err = errors.New("nil msg")
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendImage(msg *Image) (r *Result, err error) {
@@ -154,7 +154,7 @@ func (clt *Client) SendImage(msg *Image) (r *Result, err error) {
 		err = errors.New("nil msg")
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendVoice(msg *Voice) (r *Result, err error) {
@@ -162,7 +162,7 @@ func (clt *Client) SendVoice(msg *Voice) (r *Result, err error) {
 		err = errors.New("nil msg")
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendVideo(msg *Video) (r *Result, err error) {
@@ -170,7 +170,7 @@ func (clt *Client) SendVideo(msg *Video) (r *Result, err error) {
 		err = errors.New("nil msg")
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendFile(msg *File) (r *Result, err error) {
@@ -178,7 +178,7 @@ func (clt *Client) SendFile(msg *File) (r *Result, err error) {
 		err = errors.New("nil msg")
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendNews(msg *News) (r *Result, err error) {
@@ -189,7 +189,7 @@ func (clt *Client) SendNews(msg *News) (r *Result, err error) {
 	if err = msg.CheckValid(); err != nil {
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
 func (clt *Client) SendMPNews(msg *MPNews) (r *Result, err error) {
@@ -200,10 +200,10 @@ func (clt *Client) SendMPNews(msg *MPNews) (r *Result, err error) {
 	if err = msg.CheckValid(); err != nil {
 		return
 	}
-	return clt.send(msg)
+	return clt.Send(msg)
 }
 
-func (clt *Client) send(msg interface{}) (r *Result, err error) {
+func (clt *Client) Send(msg interface{}) (r *Result, err error) {
 	var result struct {
 		Error
 		Result

@@ -1,4 +1,4 @@
-package corp
+package mp
 
 import (
 	"bytes"
@@ -17,7 +17,6 @@ type Client struct {
 	appSecret  string
 	httpClient *http.Client
 	tokenInfo  TokenInfo
-	ticketInfo TicketInfo
 }
 
 func NewClient(appId string, appSecret string) *Client {
@@ -26,13 +25,6 @@ func NewClient(appId string, appSecret string) *Client {
 		appSecret:  appSecret,
 		httpClient: http.DefaultClient,
 	}
-}
-
-func (c *Client) SetToken(token TokenInfo) {
-	c.tokenInfo = token
-}
-func (c *Client) SetTicket(ticket TicketInfo) {
-	c.ticketInfo = ticket
 }
 
 type TokenInfo struct {
@@ -44,10 +36,9 @@ func (c *Client) GetTokenInfo() TokenInfo {
 	return c.tokenInfo
 }
 
-func (c *Client) GetTicketInfo() TicketInfo {
-	return c.ticketInfo
+func (c *Client) SetToken(token TokenInfo) {
+	c.tokenInfo = token
 }
-
 func (c *Client) Token() (token string, err error) {
 	if c.isValidToken() {
 		token = c.tokenInfo.Token
@@ -76,7 +67,7 @@ func (c *Client) isValidToken() bool {
 }
 func (c *Client) getToken() (token TokenInfo, err error) {
 
-	_url := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s",
+	_url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
 		url.QueryEscape(c.appId), url.QueryEscape(c.appSecret))
 
 	if _url == "" {
@@ -131,73 +122,6 @@ func (c *Client) getToken() (token TokenInfo, err error) {
 	result.ExpiresIn = time.Now().Add(time.Second * time.Duration(result.ExpiresIn)).Unix()
 
 	token = result.TokenInfo
-	return
-}
-
-type TicketInfo struct {
-	Ticket    string `json:"ticket"`
-	ExpiresIn int64  `json:"expires_in"` // 有效时间, seconds
-}
-
-func (c *Client) isValidTicket() bool {
-	timeNowUnix := time.Now().Unix()
-	if timeNowUnix+2 >= c.ticketInfo.ExpiresIn || c.ticketInfo.Ticket == "" {
-		return false
-	}
-	return true
-}
-func (c *Client) Ticket() (ticket string, err error) {
-	if c.isValidTicket() {
-		ticket = c.ticketInfo.Ticket
-		return
-	}
-	return c.RefreshTicket()
-}
-func (c *Client) RefreshTicket() (ticket string, err error) {
-	ticketInfo, err := c.getTicket()
-	if err != nil {
-		return
-	}
-	c.ticketInfo = ticketInfo
-	ticket = c.ticketInfo.Ticket
-	return
-}
-
-// 从微信服务器获取 jsapi_ticket.
-func (c *Client) getTicket() (ticket TicketInfo, err error) {
-	var result struct {
-		Error
-		TicketInfo
-	}
-	incompleteURL := "https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="
-	if err = c.GetJSON(incompleteURL, &result); err != nil {
-		return
-	}
-
-	if result.ErrCode != ErrCodeOK {
-		err = &result.Error
-		return
-	}
-
-	// 由于网络的延时, jsapi_ticket 过期时间留了一个缓冲区
-	switch {
-	case result.ExpiresIn > 60*60:
-		result.ExpiresIn -= 60 * 10
-	case result.ExpiresIn > 60*30:
-		result.ExpiresIn -= 60 * 5
-	case result.ExpiresIn > 60*5:
-		result.ExpiresIn -= 60
-	case result.ExpiresIn > 60:
-		result.ExpiresIn -= 10
-	case result.ExpiresIn > 0:
-	default:
-		err = errors.New("invalid expires_in: " + strconv.FormatInt(result.ExpiresIn, 10))
-		return
-	}
-
-	// 转换为具体过期时间的unix数值
-	result.ExpiresIn = time.Now().Add(time.Second * time.Duration(result.ExpiresIn)).Unix()
-	ticket = result.TicketInfo
 	return
 }
 
