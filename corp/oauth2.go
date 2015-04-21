@@ -8,6 +8,8 @@ package corp
 import (
 	"net/url"
 	"strconv"
+
+	"github.com/skcloud/crypto"
 )
 
 // 构造获取code的URL.
@@ -16,13 +18,15 @@ import (
 //               redirect_uri/?code=CODE&state=STATE，企业可根据code参数获得员工的userid。
 //  scope:       应用授权作用域，此时固定为：snsapi_base
 //  state:       重定向后会带上state参数，企业可以填写a-zA-Z0-9的参数值，长度不可超过128个字节
-func AuthCodeURL(corpId, redirectURL, scope, state string) string {
-	return "https://open.weixin.qq.com/connect/oauth2/authorize" +
+func AuthCodeURL(corpId, redirectURL, scope string) (authUrl string, state string) {
+	state = crypto.GetRandomKey()
+	authUrl = "https://open.weixin.qq.com/connect/oauth2/authorize" +
 		"?appid=" + url.QueryEscape(corpId) +
 		"&redirect_uri=" + url.QueryEscape(redirectURL) +
 		"&response_type=code&scope=" + url.QueryEscape(scope) +
 		"&state=" + url.QueryEscape(state) +
 		"#wechat_redirect"
+	return
 }
 
 type AuthUserInfo struct {

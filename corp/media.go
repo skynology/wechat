@@ -28,15 +28,15 @@ type MediaInfo struct {
 }
 
 // 获取上media下载URL, 用于保存到文件服务器
-func (clt *Client) GetMediaDownloadURL(mediaId string) (uri string, err error) {
+func (clt *Client) GetMediaDownloadURL(mediaId string) string {
 	token, err := clt.Token()
 	if err != nil {
-		return
+		return ""
 	}
-	uri = "https://qyapi.weixin.qq.com/cgi-bin/media/get?media_id=" + url.QueryEscape(mediaId) +
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/media/get?media_id=" + url.QueryEscape(mediaId) +
 		"&access_token=" + url.QueryEscape(token)
 
-	return
+	return uri
 }
 
 func (clt *Client) UploadMediaFromReader(mediaType, filename string, reader io.Reader) (info *MediaInfo, err error) {

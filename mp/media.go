@@ -48,6 +48,18 @@ func (article *Article) SetShowCoverPic(b bool) {
 	}
 }
 
+// 获取临时素材下载地址
+func (clt *Client) GetMediaDownloadURL(mediaId string) string {
+	token, err := clt.Token()
+	if err != nil {
+		return ""
+	}
+	finalURL := "http://file.api.weixin.qq.com/cgi-bin/media/get?media_id=" + url.QueryEscape(mediaId) +
+		"&access_token=" + url.QueryEscape(token)
+
+	return finalURL
+}
+
 // 下载多媒体到文件.
 func (clt *Client) DownloadMedia(mediaId, filepath string) (err error) {
 	file, err := os.Create(filepath)

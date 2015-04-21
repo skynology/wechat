@@ -35,6 +35,8 @@ type UserInfo struct {
 
 	// 备注名
 	Remark string `json:"remark,omitempty"`
+
+	Subscribe int `json:"subscribe"`
 }
 
 var ErrNoHeadImage = errors.New("没有头像")

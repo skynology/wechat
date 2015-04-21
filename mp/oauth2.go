@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/skcloud/crypto"
 )
 
 const (
@@ -132,23 +134,27 @@ func (clt *Client) OauthUserInfo(openId string, accessToken string, lang string)
 //               snsapi_userinfo （弹出授权页面，可通过openid拿到昵称、性别、所在地。
 //               并且，即使在未关注的情况下，只要用户授权，也能获取其信息）
 //  state:       重定向后会带上state参数，开发者可以填写a-zA-Z0-9的参数值，最多128字节
-func OAuthCodeURL(appId, redirectURL, scope, state string) string {
-	return "https://open.weixin.qq.com/connect/oauth2/authorize" +
+func OAuthCodeURL(appId, redirectURL, scope string) (authUrl string, state string) {
+	state = crypto.GetRandomKey()
+	authUrl = "https://open.weixin.qq.com/connect/oauth2/authorize" +
 		"?appid=" + url.QueryEscape(appId) +
 		"&redirect_uri=" + url.QueryEscape(redirectURL) +
 		"&response_type=code&scope=" + url.QueryEscape(scope) +
 		"&state=" + url.QueryEscape(state) +
 		"#wechat_redirect"
+	return
 }
 
 // 用户相关的 oauth2 token 信息
 type OAuth2Token struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresAt    int64 // 过期时间, unixtime, 分布式系统要求时间同步, 建议使用 NTP
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    int64  `json:"expires_in"`
 
-	OpenId string
-	Scopes []string // 用户授权的作用域
+	OpenId    string   `json:"openid"`
+	Scopes    []string `json:"scope"` // 用户授权的作用域
+	UnionId   string   `json:"unionid"`
+	ExpiresAt int64    `json:"-"` // 过期时间, unixtime, 分布式系统要求时间同步, 建议使用 NTP
 }
 
 // 判断授权的 OAuth2Token.AccessToken 是否过期, 过期返回 true, 否则返回 false
@@ -243,6 +249,7 @@ func (clt *Client) updateOauthToken(url string) (tk *OAuth2Token, err error) {
 		ExpiresIn    int64  `json:"expires_in"`    // access_token接口调用凭证超时时间，单位（秒）
 		OpenId       string `json:"openid"`        // 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，也会产生一个用户和公众号唯一的OpenID
 		Scope        string `json:"scope"`         // 用户授权的作用域，使用逗号（,）分隔
+		UnionId      string `json:"unionid"`
 	}
 
 	if err = json.NewDecoder(httpResp.Body).Decode(&result); err != nil {
@@ -276,9 +283,11 @@ func (clt *Client) updateOauthToken(url string) (tk *OAuth2Token, err error) {
 	if result.RefreshToken != "" {
 		tk.RefreshToken = result.RefreshToken
 	}
+	tk.ExpiresIn = result.ExpiresIn
 	tk.ExpiresAt = time.Now().Unix() + result.ExpiresIn
 
 	tk.OpenId = result.OpenId
+	tk.UnionId = result.UnionId
 
 	strs := strings.Split(result.Scope, ",")
 	tk.Scopes = make([]string, 0, len(strs))
