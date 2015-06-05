@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skcloud/crypto"
+	"github.com/skynology/go-crypto"
 )
 
 const (
@@ -142,6 +142,7 @@ func OAuthCodeURL(appId, redirectURL, scope string) (authUrl string, state strin
 		"&response_type=code&scope=" + url.QueryEscape(scope) +
 		"&state=" + url.QueryEscape(state) +
 		"#wechat_redirect"
+
 	return
 }
 

@@ -200,15 +200,56 @@ func (clt *Client) CreateVideo(mediaId, title, description string) (info *MediaI
 	return
 }
 
-func (clt *Client) UploadMediaFromReader(mediaType, filename string, reader io.Reader) (info *MediaInfo, err error) {
+// 上传多媒体图片
+//  NOTE: 参数 filename 不是文件路径, 是指定 multipart/form-data 里面文件名称
+func (clt *Client) UploadImageFromReader(filename string, reader io.Reader) (info *MediaInfo, err error) {
+	if filename == "" {
+		err = errors.New("empty filename")
+		return
+	}
+	if reader == nil {
+		err = errors.New("nil reader")
+		return
+	}
+	return clt.uploadMediaFromReader(MediaTypeImage, filename, reader)
+}
+
+// 上传多媒体语音
+//  NOTE: 参数 filename 不是文件路径, 是指定 multipart/form-data 里面文件名称
+func (clt *Client) UploadVoiceFromReader(filename string, reader io.Reader) (info *MediaInfo, err error) {
+	if filename == "" {
+		err = errors.New("empty filename")
+		return
+	}
+	if reader == nil {
+		err = errors.New("nil reader")
+		return
+	}
+	return clt.uploadMediaFromReader(MediaTypeVoice, filename, reader)
+}
+
+// 上传多媒体视频
+//  NOTE: 参数 filename 不是文件路径, 是指定 multipart/form-data 里面文件名称
+func (clt *Client) UploadVideoFromReader(filename string, reader io.Reader) (info *MediaInfo, err error) {
+	if filename == "" {
+		err = errors.New("empty filename")
+		return
+	}
+	if reader == nil {
+		err = errors.New("nil reader")
+		return
+	}
+	return clt.uploadMediaFromReader(MediaTypeVideo, filename, reader)
+}
+func (clt *Client) uploadMediaFromReader(mediaType, filename string, reader io.Reader) (info *MediaInfo, err error) {
 	var result struct {
 		Error
 		MediaInfo
 	}
 
-	incompleteURL := "http://file.api.weixin.qq.com/cgi-bin/media/upload?type=" +
+	incompleteURL := "https://api.weixin.qq.com/cgi-bin/media/upload?type=" +
 		url.QueryEscape(mediaType) + "&access_token="
-	if err = clt.UploadFromReader(incompleteURL, filename, reader, &result); err != nil {
+	if err = clt.UploadFromReader(incompleteURL, "media", filename, reader, "", nil, &result); err != nil {
 		return
 	}
 
@@ -242,9 +283,8 @@ func (clt *Client) uploadThumbFromReader(filename string, reader io.Reader) (inf
 		CreatedAt int64  `json:"created_at"`
 	}
 
-	incompleteURL := "http://file.api.weixin.qq.com/cgi-bin/media/upload?type=" +
-		url.QueryEscape(MediaTypeThumb) + "&access_token="
-	if err = clt.UploadFromReader(incompleteURL, filename, reader, &result); err != nil {
+	incompleteURL := "https://api.weixin.qq.com/cgi-bin/media/upload?type=thumb&access_token="
+	if err = clt.UploadFromReader(incompleteURL, "media", filename, reader, "", nil, &result); err != nil {
 		return
 	}
 

@@ -1,12 +1,10 @@
-package corp
+package mp
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -30,38 +28,6 @@ func NewClient(appId string, appSecret string) *Client {
 	}
 }
 
-// NewTLSHttpClient 创建支持双向证书认证的 http.Client
-func NewTLSHttpClient(certFile, keyFile string) (httpClient *http.Client, err error) {
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return
-	}
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-
-	httpClient = &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			Dial: (&net.Dialer{
-				Timeout:   5 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSClientConfig:     tlsConfig,
-			TLSHandshakeTimeout: 5 * time.Second,
-		},
-		Timeout: 15 * time.Second,
-	}
-	return
-}
-
-func (c *Client) SetToken(token TokenInfo) {
-	c.tokenInfo = token
-}
-func (c *Client) SetTicket(ticket TicketInfo) {
-	c.ticketInfo = ticket
-}
-
 type TokenInfo struct {
 	Token     string `json:"access_token"`
 	ExpiresIn int64  `json:"expires_in"`
@@ -74,7 +40,12 @@ func (c *Client) GetTokenInfo() TokenInfo {
 func (c *Client) GetTicketInfo() TicketInfo {
 	return c.ticketInfo
 }
-
+func (c *Client) SetToken(token TokenInfo) {
+	c.tokenInfo = token
+}
+func (c *Client) SetTicket(ticket TicketInfo) {
+	c.ticketInfo = ticket
+}
 func (c *Client) Token() (token string, err error) {
 	if c.isValidToken() {
 		token = c.tokenInfo.Token
@@ -103,9 +74,9 @@ func (c *Client) isValidToken() bool {
 }
 func (c *Client) getToken() (token TokenInfo, err error) {
 
-	_url := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s",
+	_url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
 		url.QueryEscape(c.appId), url.QueryEscape(c.appSecret))
-
+	fmt.Println("get token:", _url)
 	if _url == "" {
 		err = errors.New("invalid client type")
 		return
@@ -196,7 +167,7 @@ func (c *Client) getTicket() (ticket TicketInfo, err error) {
 		Error
 		TicketInfo
 	}
-	incompleteURL := "https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="
+	incompleteURL := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi&access_token="
 	if err = c.GetJSON(incompleteURL, &result); err != nil {
 		return
 	}
@@ -251,9 +222,12 @@ func (c *Client) PostJSON(incompleteURL string, request interface{}, response in
 		return
 	}
 
+	//fmt.Println("post weixin json:", string(b))
+
 	hasRetried := false
 RETRY:
 	finalURL := incompleteURL + url.QueryEscape(token)
+	//fmt.Println("wechat call url:", finalURL)
 
 	httpResp, err := c.httpClient.Post(finalURL, "application/json; charset=utf-8", bytes.NewReader(b))
 	if err != nil {

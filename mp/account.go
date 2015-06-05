@@ -2,6 +2,7 @@ package mp
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ const (
 // 永久二维码
 type PermanentQRCode struct {
 	// 下面两个字段同时只有一个有效
-	SceneId     uint32 `json:"scene_id"`  // 场景值
+	SceneId     int    `json:"scene_id"`  // 场景值
 	SceneString string `json:"scene_str"` // 场景值ID（字符串形式的ID），字符串类型，长度限制为1到64
 
 	Ticket string `json:"ticket"` // 获取的二维码ticket，凭借此ticket可以在有效时间内换取二维码。
@@ -34,22 +35,29 @@ type TemporaryQRCode struct {
 	ExpiresIn int `json:"expire_seconds"` // 二维码的有效时间，以秒为单位。
 }
 
+// 二维码图片的URL, 可以GET此URL下载二维码或者在线显示此二维码.
+func (clt *Client) QRCodeURL(ticket string) string {
+	return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + url.QueryEscape(ticket)
+}
+
 // 创建临时二维码
 //  SceneId:       场景值ID，为32位非0整型
 //  ExpireSeconds: 二维码的有效时间，以秒为单位。
-func (clt *Client) CreateTemporaryQRCode(SceneId uint32, ExpireSeconds int) (qrcode *TemporaryQRCode, err error) {
+func (clt *Client) CreateTemporaryQRCode(SceneId int, ExpireSeconds int) (qrcode *TemporaryQRCode, err error) {
 	var request struct {
 		ExpireSeconds int    `json:"expire_seconds"`
 		ActionName    string `json:"action_name"`
 		ActionInfo    struct {
 			Scene struct {
-				SceneId uint32 `json:"scene_id"`
+				SceneId int `json:"scene_id"`
 			} `json:"scene"`
 		} `json:"action_info"`
 	}
 	request.ExpireSeconds = ExpireSeconds
 	request.ActionName = "QR_SCENE"
 	request.ActionInfo.Scene.SceneId = SceneId
+
+	fmt.Println("qrcode:", request)
 
 	var result struct {
 		Error
@@ -72,12 +80,12 @@ func (clt *Client) CreateTemporaryQRCode(SceneId uint32, ExpireSeconds int) (qrc
 
 // 创建永久二维码
 //  SceneId: 场景值ID，最大值为100000（目前参数只支持1--100000）
-func (clt *Client) CreatePermanentQRCode(SceneId uint32) (qrcode *PermanentQRCode, err error) {
+func (clt *Client) CreatePermanentQRCode(SceneId int) (qrcode *PermanentQRCode, err error) {
 	var request struct {
 		ActionName string `json:"action_name"`
 		ActionInfo struct {
 			Scene struct {
-				SceneId uint32 `json:"scene_id"`
+				SceneId int `json:"scene_id"`
 			} `json:"scene"`
 		} `json:"action_info"`
 	}

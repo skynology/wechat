@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/skcloud/crypto"
+	"github.com/skynology/go-crypto"
 )
 
 // 构造获取code的URL.

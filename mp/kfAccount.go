@@ -20,10 +20,10 @@ const (
 )
 
 type KfInfo struct {
-	Id           string `json:"kf_id,string"` // 客服工号
-	Account      string `json:"kf_account"`   // 完整客服账号，格式为：账号前缀@公众号微信号
-	Nickname     string `json:"kf_nick"`      // 客服昵称
-	HeadImageURL string `json:"kf_headimg"`   // 客服头像
+	Id           string `json:"kf_id"`         // 客服工号
+	Account      string `json:"kf_account"`    // 完整客服账号，格式为：账号前缀@公众号微信号
+	Nickname     string `json:"kf_nick"`       // 客服昵称
+	HeadImageURL string `json:"kf_headimgurl"` // 客服头像
 }
 
 // 获取客服图像的大小, 如果客服没有图像则返回 ErrNoHeadImage 错误.
@@ -82,7 +82,7 @@ func (clt *Client) KfList() (KfList []KfInfo, err error) {
 
 // 在线客服接待信息
 type OnlineKfInfo struct {
-	Id                  string `json:"kf_id,string"`  // 客服工号
+	Id                  string `json:"kf_id"`         // 客服工号
 	Account             string `json:"kf_account"`    // 完整客服账号，格式为：账号前缀@公众号微信号
 	Status              int    `json:"status"`        // 客服在线状态 1：pc在线，2：手机在线。若pc和手机同时在线则为 1+2=3
 	AutoAcceptThreshold int    `json:"auto_accept"`   // 客服设置的最大自动接入数
@@ -218,7 +218,7 @@ func (clt *Client) uploadKfHeadImageFromReader(kfAccount, filename string, reade
 
 	incompleteURL := "http://api.weixin.qq.com/customservice/kfaccount/uploadheadimg?kf_account=" +
 		url.QueryEscape(kfAccount) + "&access_token="
-	if err = clt.UploadFromReader(incompleteURL, filename, reader, &result); err != nil {
+	if err = clt.UploadFromReader(incompleteURL, "media", filename, reader, "", nil, &result); err != nil {
 		return
 	}
 
@@ -234,7 +234,7 @@ func (clt *Client) DeleteKfAccount(kfAccount string) (err error) {
 	var result Error
 
 	incompleteURL := "https://api.weixin.qq.com/customservice/kfaccount/del?kf_account=" +
-		url.QueryEscape(kfAccount) + "&access_token="
+		kfAccount + "&access_token="
 	if err = clt.GetJSON(incompleteURL, &result); err != nil {
 		return
 	}
