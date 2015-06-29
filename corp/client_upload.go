@@ -274,7 +274,7 @@ func (clt *Client) uploadFromBytesReader(incompleteURL, filename string,
 	hasRetried := false
 RETRY:
 	finalURL := incompleteURL + url.QueryEscape(token)
-
+	fmt.Println("final url:", finalURL)
 	if hasRetried {
 		if _, err = reader.Seek(originalOffset, 0); err != nil {
 			return

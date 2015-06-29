@@ -7,7 +7,6 @@ package corp
 
 import (
 	"net/url"
-	"strconv"
 
 	"github.com/skynology/go-crypto"
 )
@@ -19,6 +18,9 @@ import (
 //  scope:       应用授权作用域，此时固定为：snsapi_base
 //  state:       重定向后会带上state参数，企业可以填写a-zA-Z0-9的参数值，长度不可超过128个字节
 func AuthCodeURL(corpId, redirectURL, scope string) (authUrl string, state string) {
+	if scope == "" {
+		scope = "snsapi_base"
+	}
 	state = crypto.GetRandomKey()
 	authUrl = "https://open.weixin.qq.com/connect/oauth2/authorize" +
 		"?appid=" + url.QueryEscape(corpId) +
@@ -38,14 +40,13 @@ type AuthUserInfo struct {
 //  agentId: 跳转链接时所在的企业应用ID
 //  code:    通过员工授权获取到的code，每次员工授权带上的code将不一样，
 //           code只能使用一次，5分钟未被使用自动过期
-func (clt *Client) GetUserIdByCode(agentId int64, code string) (info *AuthUserInfo, err error) {
+func (clt *Client) GetUserIdByCode(code string) (info *AuthUserInfo, err error) {
 	var result struct {
 		Error
 		AuthUserInfo
 	}
 
-	incompleteURL := "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?agentid=" +
-		strconv.FormatInt(agentId, 10) + "&code=" + url.QueryEscape(code) +
+	incompleteURL := "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?code=" + url.QueryEscape(code) +
 		"&access_token="
 	if err = clt.GetJSON(incompleteURL, &result); err != nil {
 		return

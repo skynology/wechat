@@ -28,7 +28,7 @@ type CommonSendMessageHeader struct {
 }
 
 type Text struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	Text struct {
 		Content string `json:"content"`
@@ -36,7 +36,7 @@ type Text struct {
 }
 
 type Image struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	Image struct {
 		MediaId string `json:"media_id"` // 图片媒体文件id，可以调用上传媒体文件接口获取
@@ -44,7 +44,7 @@ type Image struct {
 }
 
 type Voice struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	Voice struct {
 		MediaId string `json:"media_id"` // 语音文件id，可以调用上传媒体文件接口获取
@@ -52,7 +52,7 @@ type Voice struct {
 }
 
 type Video struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	Video struct {
 		MediaId     string `json:"media_id"`              // 视频媒体文件id，可以调用上传媒体文件接口获取
@@ -62,7 +62,7 @@ type Video struct {
 }
 
 type File struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	File struct {
 		MediaId string `json:"media_id"` // 媒体文件id，可以调用上传媒体文件接口获取
@@ -80,7 +80,7 @@ const NewsArticleCountLimit = 10
 
 // News 消息, 注意沒有 Safe 字段.
 type News struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	News struct {
 		Articles []NewsArticle `json:"articles,omitempty"` // 图文消息，一个图文消息支持1到10条图文
@@ -113,7 +113,7 @@ type MPNewsArticle struct {
 
 // MPNews 消息与 News 消息类似，不同的是图文消息内容存储在微信后台，并且支持保密选项。
 type MPNews struct {
-	CommonMessageHeader
+	CommonSendMessageHeader
 
 	MPNews struct {
 		Articles []MPNewsArticle `json:"articles,omitempty"` // 多条图文消息信息, 默认第一个item为大图, 注意, 如果图文数超过10, 则将会无响应
