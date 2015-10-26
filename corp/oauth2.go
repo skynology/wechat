@@ -6,6 +6,7 @@
 package corp
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/skynology/go-crypto"
@@ -48,6 +49,7 @@ func (clt *Client) GetUserIdByCode(code string) (info *AuthUserInfo, err error) 
 
 	incompleteURL := "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?code=" + url.QueryEscape(code) +
 		"&access_token="
+	fmt.Println("url:", incompleteURL)
 	if err = clt.GetJSON(incompleteURL, &result); err != nil {
 		return
 	}
