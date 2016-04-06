@@ -21,7 +21,7 @@ import (
 //  fn:         func() hash.Hash, 如果 fn == nil 则默认用 md5.New
 func (cli *Client) Sign(data interface{}) string {
 	parameters := convertStructToMap(data)
-	fmt.Println("sign param:", parameters)
+	//	fmt.Println("sign param:", parameters)
 
 	ks := make([]string, 0, len(parameters))
 	for k := range parameters {

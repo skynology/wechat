@@ -76,7 +76,7 @@ func (c *Client) getToken() (token TokenInfo, err error) {
 
 	_url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
 		url.QueryEscape(c.appId), url.QueryEscape(c.appSecret))
-	fmt.Println("get token:", _url)
+	// fmt.Println("get token:", _url)
 	if _url == "" {
 		err = errors.New("invalid client type")
 		return

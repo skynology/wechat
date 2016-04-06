@@ -2,7 +2,6 @@ package mp
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -57,7 +56,7 @@ func (clt *Client) CreateTemporaryQRCode(SceneId int, ExpireSeconds int) (qrcode
 	request.ActionName = "QR_SCENE"
 	request.ActionInfo.Scene.SceneId = SceneId
 
-	fmt.Println("qrcode:", request)
+	// fmt.Println("qrcode:", request)
 
 	var result struct {
 		Error

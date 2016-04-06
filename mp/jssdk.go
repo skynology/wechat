@@ -30,7 +30,7 @@ func WXConfigSign(jsapiTicket, url string) (signature string, timestamp string, 
 	buf = append(buf, "&url="...)
 	buf = append(buf, url...)
 
-	fmt.Println("wx sign is:", string(buf))
+	// fmt.Println("wx sign is:", string(buf))
 
 	hashsum := sha1.Sum(buf)
 	signature = hex.EncodeToString(hashsum[:])
